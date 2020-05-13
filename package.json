@@ -1,0 +1,25 @@
+{
+  "name": "electron-auto-update-example",
+  "version": "1.0.0",
+  "description": "test",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivns1993/electron-update-test.git"
+  },
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder build --mac --win --publish never",
+    "deploy": "electron-builder build --mac --win --publish always"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^8.2.5",
+    "electron-builder": "^22.6.0"
+  },
+  "dependencies": {
+    "electron-updater": "^4.3.1"
+  }
+}
