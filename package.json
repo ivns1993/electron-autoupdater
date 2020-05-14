@@ -1,17 +1,25 @@
 {
   "name": "electron-auto-update-example",
-  "version": "1.0.1",
+  "version": "1.0.7",
   "description": "test",
   "repository": {
     "type": "git",
     "url": "https://github.com/ivns1993/electron-update-test.git"
   },
   "main": "main.js",
+  "build": {
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "electron-builder build --mac --win --publish never",
-    "deploy": "electron-builder build --mac --win --publish always"
+    "build": "electron-builder build -mwl --publish never",
+    "deploy": "electron-builder build -mwl --publish always"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +28,7 @@
     "electron-builder": "^22.6.0"
   },
   "dependencies": {
-    "electron-updater": "^4.3.1"
+    "electron-updater": "^4.3.1",
+    "electron-log": "^4.1.2"
   }
 }

@@ -1,7 +1,27 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
 
 let mainWindow;
+let isUpdateInProgress = false;
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+
+app.on('ready', () => {
+  createWindow();
+  setInterval(() => {
+    if (!isUpdateInProgress) {
+      autoUpdater.checkForUpdatesAndNotify();
+    }
+  }, 5000);
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -15,37 +35,38 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-  mainWindow.once('ready-to-show', () => {
-    autoUpdater.checkForUpdatesAndNotify();
-  });
 }
 
-app.on('ready', () => {
-  createWindow();
-});
+function sendStatusToWindow(text) {
+  log.info(text);
+}
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow();
-  }
-});
-
-ipcMain.on('app_version', event => event.sender.send('app_version', { version: app.getVersion() }));
-
-ipcMain.on('restart_app', () => {
-  autoUpdater.quitAndInstall();
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking if update is started...');
 });
 
 autoUpdater.on('update-available', () => {
-  mainWindow.webContents.send('update_available');
+  isUpdateInProgress = true;
+});
+
+autoUpdater.on('update-not-available', () => {
+  sendStatusToWindow('Update not available...');
+});
+
+autoUpdater.on('error', (err) => {
+  log.error('Error in auto-updater. ' + err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  sendStatusToWindow(log_message);
 });
 
 autoUpdater.on('update-downloaded', () => {
-  mainWindow.webContents.send('update_downloaded');
+  sendStatusToWindow('Update downloaded');
+  autoUpdater.quitAndInstall();
 });
+
+ipcMain.on('app_version', event => event.sender.send('app_version', { version: app.getVersion() }));
